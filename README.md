@@ -1,8 +1,10 @@
-Sub DuplicateColumnAndRename()
+Sub DuplicateColumnAndReplaceAll()
     ' 変数の宣言
     Dim ws As Worksheet
     Dim lastCol As Long
     Dim j As Long
+    Dim newCol As Range
+    Dim cell As Range
 
     ' --- 初期設定 ---
     ' アクティブなシートを対象に設定
@@ -27,8 +29,18 @@ Sub DuplicateColumnAndRename()
             ' (2) 右隣にコピーした列を挿入
             ws.Columns(j + 1).Insert Shift:=xlToRight
             
-            ' (3) 新しくできた列（j+1列目）の4行目の値を "GFT" に変更
-            ws.Cells(4, j + 1).Value = "GFT"
+            ' (3) 新しくできた列（j+1列目）を変数に設定
+            Set newCol = ws.Columns(j + 1)
+            
+            ' (4) 新しい列の全セルをチェックして "NDB" を "GFT" に置換
+            '   (UsedRange との重複範囲のみを対象とし、処理を高速化)
+            For Each cell In Intersect(newCol, ws.UsedRange)
+                ' セル内に "NDB" という文字列が含まれているかチェック
+                If InStr(1, cell.Value, "NDB", vbTextCompare) > 0 Then
+                    ' "NDB" を "GFT" に置換する
+                    cell.Value = Replace(cell.Value, "NDB", "GFT", 1, -1, vbTextCompare)
+                End If
+            Next cell
             
         End If
     Next j
